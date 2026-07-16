@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carregando Oferta...</title>
+    <!-- Fonte do Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #0f172a; /* Slate 900 */
+            color: #f8fafc; /* Slate 50 */
+            font-family: 'Inter', sans-serif;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Efeito de background suave */
+        body::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, rgba(59, 130, 246, 0.1) 0%, rgba(15, 23, 42, 1) 50%);
+            z-index: -1;
+        }
+
+        .loader-container {
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            background: rgba(30, 41, 59, 0.5); /* Slate 800 com opacidade */
+            padding: 2.5rem 2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+        }
+
+        .progress-wrapper {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 12px;
+            background-color: #334155; /* Slate 700 */
+            border-radius: 9999px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #3b82f6); /* Blue to Purple to Blue */
+            background-size: 200% auto;
+            border-radius: 9999px;
+            transition: width 0.1s linear;
+            animation: shine 2s linear infinite;
+        }
+
+        @keyframes shine {
+            to {
+                background-position: 200% center;
+            }
+        }
+
+        .percentage {
+            font-weight: 700;
+            font-size: 1.75rem;
+            color: #38bdf8; /* Sky 400 */
+            margin-bottom: 0.5rem;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .status-text {
+            font-size: 0.95rem;
+            color: #94a3b8; /* Slate 400 */
+            min-height: 1.5rem;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Spinner animado opcional */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border-top-color: #38bdf8;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="loader-container">
+        <div class="spinner"></div>
+        <h1 id="mainText">Preparando seu acesso...</h1>
+        
+        <div class="percentage" id="percentageText">0%</div>
+
+        <div class="progress-wrapper">
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressBar"></div>
+            </div>
+        </div>
+
+        <div class="status-text" id="statusText">Verificando conexão segura...</div>
+    </div>
+
+    <script>
+        // CONFIGURAÇÃO: Coloque aqui o link da sua página de vendas principal.
+        // Se estiverem no mesmo servidor, "../sales-page/" ou "/sales-page/" deve funcionar.
+        const REDIRECT_URL = "https://liveshopcomia.vercel.app/"; 
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const progressBar = document.getElementById('progressBar');
+            const percentageText = document.getElementById('percentageText');
+            const statusText = document.getElementById('statusText');
+            
+            let progress = 0;
+            const duration = 3000; // Tempo total em milissegundos (3 segundos)
+            const intervalTime = 20; // Atualiza a cada 20ms
+            const steps = duration / intervalTime;
+            const increment = 100 / steps;
+
+            const updateTexts = (currentProgress) => {
+                if (currentProgress > 30 && currentProgress < 60) {
+                    statusText.innerText = "Carregando a oferta especial...";
+                } else if (currentProgress >= 60 && currentProgress < 90) {
+                    statusText.innerText = "Gerando seu link único...";
+                } else if (currentProgress >= 90) {
+                    statusText.innerText = "Redirecionando...";
+                }
+            };
+
+            const redirect = () => {
+                // Pega os parâmetros da URL (ex: ?utm_source=facebook) para repassar para a página de vendas
+                const urlParams = window.location.search;
+                window.location.href = REDIRECT_URL + urlParams; 
+            };
+
+            const timer = setInterval(() => {
+                progress += increment;
+                
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(timer);
+                    setTimeout(redirect, 400); // Pequeno delay no 100% para o usuário ver
+                }
+
+                progressBar.style.width = `${progress}%`;
+                percentageText.innerText = `${Math.floor(progress)}%`;
+                updateTexts(progress);
+
+            }, intervalTime);
+        });
+    </script>
+</body>
+</html>
