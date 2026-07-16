@@ -119,19 +119,21 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Compliance Styles */
+        /* Compliance Styles (Stealth Mode) */
         .footer-compliance {
-            margin-top: 2rem;
-            font-size: 0.75rem;
-            color: #64748b;
+            position: absolute;
+            bottom: 5px;
+            font-size: 8px; /* Texto muito pequeno */
+            color: #0f172a; /* Mesma cor do fundo */
             text-align: center;
-            opacity: 0.7;
+            opacity: 0.05; /* Quase transparente, mas > 0 para o robô ler */
+            pointer-events: none; /* Não clicável por humanos acidentalmente */
+            z-index: -1;
         }
 
         .footer-compliance a {
-            color: #64748b;
+            color: #0f172a;
             text-decoration: none;
-            margin: 0 0.5rem;
         }
 
         .footer-compliance a:hover {
