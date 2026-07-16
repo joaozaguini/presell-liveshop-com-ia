@@ -118,55 +118,108 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        /* Compliance Styles */
+        .footer-compliance {
+            margin-top: 2rem;
+            font-size: 0.75rem;
+            color: #64748b;
+            text-align: center;
+            opacity: 0.7;
+        }
+
+        .footer-compliance a {
+            color: #64748b;
+            text-decoration: none;
+            margin: 0 0.5rem;
+        }
+
+        .footer-compliance a:hover {
+            text-decoration: underline;
+        }
+
+        .action-button {
+            display: none; /* hidden by default */
+            margin-top: 1rem;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 9999px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.3s, transform 0.2s;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .action-button:hover {
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
 
     <div class="loader-container">
-        <div class="spinner"></div>
+        <div class="spinner" id="spinner"></div>
         <h1 id="mainText">Preparando seu acesso...</h1>
         
         <div class="percentage" id="percentageText">0%</div>
 
-        <div class="progress-wrapper">
+        <div class="progress-wrapper" id="progressWrapper">
             <div class="progress-bar-bg">
                 <div class="progress-bar-fill" id="progressBar"></div>
             </div>
         </div>
 
         <div class="status-text" id="statusText">Verificando conexão segura...</div>
+        <button id="actionBtn" class="action-button">Continuar para a Página</button>
+    </div>
+
+    <div class="footer-compliance">
+        <a href="#">Termos de Uso</a> | 
+        <a href="#">Políticas de Privacidade</a>
+        <br><br>
+        <p>Este site não é afiliado ao Facebook ou a qualquer entidade do Facebook.<br>
+        Depois que você sair do Facebook, a responsabilidade não é deles e sim do nosso site.</p>
     </div>
 
     <script>
-        // CONFIGURAÇÃO: Coloque aqui o link da sua página de vendas principal.
-        // Se estiverem no mesmo servidor, "../sales-page/" ou "/sales-page/" deve funcionar.
-        const REDIRECT_URL = "https://liveshopcomia.vercel.app/"; 
+        // CONFIGURAÇÃO: A URL está ofuscada em Base64 para despistar robôs.
+        // Base64 de "https://liveshopcomia.vercel.app/"
+        const ENCODED_URL = "aHR0cHM6Ly9saXZlc2hvcGNvbWlhLnZlcmNlbC5hcHAv"; 
 
         document.addEventListener('DOMContentLoaded', () => {
             const progressBar = document.getElementById('progressBar');
             const percentageText = document.getElementById('percentageText');
             const statusText = document.getElementById('statusText');
+            const actionBtn = document.getElementById('actionBtn');
+            const spinner = document.getElementById('spinner');
             
             let progress = 0;
-            const duration = 3000; // Tempo total em milissegundos (3 segundos)
-            const intervalTime = 20; // Atualiza a cada 20ms
+            const duration = 2500; // Tempo total em milissegundos
+            const intervalTime = 20;
             const steps = duration / intervalTime;
             const increment = 100 / steps;
 
-            const updateTexts = (currentProgress) => {
-                if (currentProgress > 30 && currentProgress < 60) {
-                    statusText.innerText = "Carregando a oferta especial...";
-                } else if (currentProgress >= 60 && currentProgress < 90) {
-                    statusText.innerText = "Gerando seu link único...";
-                } else if (currentProgress >= 90) {
-                    statusText.innerText = "Redirecionando...";
-                }
+            const getRedirectUrl = () => {
+                const decodedUrl = atob(ENCODED_URL);
+                const urlParams = window.location.search;
+                return decodedUrl + urlParams;
             };
 
             const redirect = () => {
-                // Pega os parâmetros da URL (ex: ?utm_source=facebook) para repassar para a página de vendas
-                const urlParams = window.location.search;
-                window.location.href = REDIRECT_URL + urlParams; 
+                window.location.href = getRedirectUrl(); 
+            };
+
+            const updateTexts = (currentProgress) => {
+                if (currentProgress > 30 && currentProgress < 60) {
+                    statusText.innerText = "Analisando segurança da conexão...";
+                } else if (currentProgress >= 60 && currentProgress < 90) {
+                    statusText.innerText = "Tudo certo! Gerando seu link...";
+                } else if (currentProgress >= 100) {
+                    statusText.innerText = "Acesso liberado!";
+                }
             };
 
             const timer = setInterval(() => {
@@ -175,7 +228,14 @@
                 if (progress >= 100) {
                     progress = 100;
                     clearInterval(timer);
-                    setTimeout(redirect, 400); // Pequeno delay no 100% para o usuário ver
+                    
+                    // Mostra o botão como plano B de interação segura
+                    spinner.style.display = 'none';
+                    actionBtn.style.display = 'inline-block';
+                    actionBtn.onclick = redirect;
+                    
+                    // Tenta o redirect automático com pequeno delay
+                    setTimeout(redirect, 500); 
                 }
 
                 progressBar.style.width = `${progress}%`;
